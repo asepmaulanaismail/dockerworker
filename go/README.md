@@ -13,7 +13,7 @@ docker run --rm -it -v "$PWD":/go/src/x/y/z -w /go/src/x/y/z -e "GOPATH=/go/src/
 Then build it:
 
 ```sh
-docker run --rm -it -v "$PWD":/go/src/x/y/z -w /go/src/x/y/z -e "GOPATH=/go/src/x/y/z/vendor:/go" iron/go:dev go build -o hello
+docker run --rm -it -v "$PWD":/go/src/x/y/z -w /go/src/x/y/z -e "GOPATH=/go/src/x/y/z/vendor:/go" iron/go:dev go build -o func
 ```
 
 ### 2. Test locally
@@ -21,7 +21,7 @@ docker run --rm -it -v "$PWD":/go/src/x/y/z -w /go/src/x/y/z -e "GOPATH=/go/src/
 Now test it locally:
 
 ```sh
-docker run --rm -it -e "PAYLOAD_FILE=hello.payload.json" -e "YOUR_ENV_VAR=ANYTHING" -v "$PWD":/app -w /app  iron/go ./hello
+docker run --rm -it -e "PAYLOAD_FILE=func.payload.json" -e "YOUR_ENV_VAR=ANYTHING" -v "$PWD":/app -w /app  iron/go ./func
 ```
 
 The PAYLOAD_FILE environment variable is passed in to your worker automatically and tells you
@@ -38,7 +38,7 @@ Let's package it up inside a Docker image and upload it to a Docker Registry. Co
 and modify the ENTRYPOINT line to run your script, but for this example, it's all ready to go:
 
 ```sh
-docker build -t USERNAME/hello:0.0.1 .
+docker build -t USERNAME/func:0.0.1 .
 ```
 
 That's just a standard `docker build` command. The 0.0.1 is the version which you can update
@@ -47,7 +47,7 @@ whenever you make changes to your code.
 Test your image, just to be sure you created it correctly:
 
 ```sh
-docker run --rm -it -e "PAYLOAD_FILE=hello.payload.json" -e "YOUR_ENV_VAR=ANYTHING" USERNAME/hello:0.0.1
+docker run --rm -it -e "PAYLOAD_FILE=func.payload.json" -e "YOUR_ENV_VAR=ANYTHING" USERNAME/func:0.0.1
 ```
 
 ### 4. Push it to Docker Hub
@@ -55,7 +55,7 @@ docker run --rm -it -e "PAYLOAD_FILE=hello.payload.json" -e "YOUR_ENV_VAR=ANYTHI
 Push it to Docker Hub:
 
 ```sh
-docker push USERNAME/hello:0.0.1
+docker push USERNAME/func:0.0.1
 ```
 
 ### 4. Register your image with Iron
@@ -64,7 +64,7 @@ Ok, we're ready to run this on Iron now, but first we have to let Iron know abou
 image you just pushed to Docker Hub. Also, you can optionally register environment variables here that will be passed into your container at runtime.
 
 ```sh
-iron register -e "YOUR_ENV_VAR=ANYTHING" USERNAME/hello:0.0.1
+iron register -e "YOUR_ENV_VAR=ANYTHING" USERNAME/func:0.0.1
 ```
 
 ### 5. Queue / Schedule jobs for your image
@@ -73,7 +73,7 @@ Now you can start queuing jobs or schedule recurring jobs for your image. Let's 
 queue up a job to try it out.
 
 ```sh
-iron worker queue --payload-file hello.payload.json --wait USERNAME/hello
+iron worker queue --payload-file func.payload.json --wait USERNAME/func
 ```
 
 Notice we don't use the image tag when queuing, this is so you can change versions
@@ -93,7 +93,7 @@ Here's a curl example to show how easy it is to do in any language:
 
 ```sh
 curl -H "Content-Type: application/json" -H "Authorization: OAuth $IRON_TOKEN" \
- -d '{"tasks":[{"code_name":"USERNAME/hello","payload":"{\"name\":\"Travis\"}"}]}' \
+ -d '{"tasks":[{"code_name":"USERNAME/func","payload":"{\"name\":\"Travis\"}"}]}' \
  "http://worker-aws-us-east-1.iron.io/2/projects/$IRON_PROJECT_ID/tasks"
 ```
 
@@ -118,7 +118,7 @@ Start with steps 1 and 2 above, then continue at step 3 here.
 ### 3. Package your code
 
 ```sh
-zip -r hello-go.zip .
+zip -r func-go.zip .
 ```
 
 ### 4. Upload your code
@@ -126,7 +126,7 @@ zip -r hello-go.zip .
 Then upload it:
 
 ```sh
-iron worker upload --name hello-go --zip hello-go.zip iron/go ./hello
+iron worker upload --name func-go --zip func-go.zip iron/go ./func
 ```
 
 ### 5. Queue / Schedule jobs for your worker
@@ -135,7 +135,7 @@ Now you can start queuing jobs or schedule recurring jobs for your worker. Let's
 queue up a job to try it out.
 
 ```sh
-iron worker queue -payload-file hello.payload.json --wait hello-go
+iron worker queue -payload-file func.payload.json --wait func-go
 ```
 
 The `--wait` parameter waits for the job to finish, then prints the output.
